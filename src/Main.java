@@ -1,16 +1,36 @@
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.zip.GZIPOutputStream;
 
 public class Main {
 	public static void main(String[] args) {
-		// Pathインターフェースのgetメソッドを使うと特定のファイルを指し示すことができる
-		// もしくは既にFileインスタンスが存在する場合は、toPathメソッドを使うことによってPathインスタンスに変換できる
-		// Pathインスタンスは、あくまでファイルやフォルダを指し示す役割しか持たない
-		// 実際に、指し示したものを操作するためのメソッドは、Filesクラスに定義されている
-		Path p = Paths.get("rpgsave.dat");
-		// Filesクラスのexistsメソッドを使うと、ファイルが存在するか確認してくれる
-		boolean f = Files.exists(p);
-		System.out.println(f);
+		try(FileInputStream fis = new FileInputStream("rpgsave.dat")){
+			try(FileOutputStream fos = new FileOutputStream("rpgsave2.dat")){
+				try(BufferedOutputStream bos = new BufferedOutputStream(fos)){
+					try(GZIPOutputStream gos = new GZIPOutputStream(bos)){
+						int i = fis.read();
+						while(i != -1) {
+							gos.write(i);
+							i = fis.read();
+						}
+						System.out.println("コピーが完了しました");
+					} catch(IOException e) {
+						System.out.println("コピーに失敗しました");
+						e.printStackTrace();
+					}
+				} catch(IOException e) {
+					System.out.println("バッファリングに失敗しました");
+					e.printStackTrace();
+				}
+			} catch(IOException e) {
+				System.out.println("ファイルの作成に失敗しました");
+				e.printStackTrace();
+			}
+		} catch(IOException e) {
+			System.out.println("ファイルの読み込みに失敗しました");
+			e.printStackTrace();
+		}
 	}
 }
